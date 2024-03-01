@@ -1,0 +1,75 @@
+﻿@page "/shoppingcart"
+
+@using Blazored.LocalStorage
+@using PlantWebshopLogin.Models
+
+@inject IShoppingCartService shoppingCartService
+@inject CustomerService customerService
+@inject NavigationManager navigationManager
+@inject ILocalStorageService localStorage
+
+@rendermode InteractiveServer
+
+
+<h3>ShoppingCart</h3>
+
+@if (shoppingCart.Count() == 0)
+{
+    <p>Your shoppingcart is empty.</p>
+}
+else
+{
+    <ul>
+    @foreach (var product in shoppingCart)
+    {
+        <li>@product.Name</li>
+    }
+    </ul>
+}
+
+
+<form @onsubmit="SetCustomerInfo">
+    <label>
+        Firstname:
+        <input type="text" @bind-value="customer.Firstname" />
+    </label>
+    <br />
+    <label>
+        Lastname:
+        <input type="text" @bind-value="customer.Lastname" />
+    </label>
+    <br />
+    <label>
+        Address:
+        <input type="text" @bind-value="customer.Address" />
+    </label>
+    <br />
+    <label>
+        City:
+        <input type="text" @bind-value="customer.City" />
+    </label>
+    <br />
+    <button type="submit">Submit</button>
+</form>
+
+
+@code {
+    List<Product> shoppingCart = new List<Product>();
+    Customer customer = new Customer();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            shoppingCart = await shoppingCartService.GetShoppingCart();
+            StateHasChanged(); //uppdaterar komponenten ifall ny data hämtas
+        }
+    }
+
+    public void SetCustomerInfo()
+    {
+        customerService.CreateCustomer(customer);
+        navigationManager.NavigateTo("/confirmation");
+    }
+
+}

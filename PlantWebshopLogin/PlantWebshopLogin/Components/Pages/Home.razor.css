@@ -1,0 +1,61 @@
+﻿/*PRODUCT GRID:*/
+
+.product-grid {
+    display: grid;
+    /*justify-content: center;*/
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    width: 500px;
+}
+
+
+/*PROFILE:*/
+
+.profile {
+    position: relative;
+    text-align: center;
+    color: white;
+}
+
+.picture {
+    width: 100%;
+}
+
+.heading-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.headline {
+    font-family: Garamond;
+    font-size: 80px;
+}
+
+.underline {
+    font-family: Arial;
+    font-size: 20px;
+}
+
+
+/*FOOTER*/
+
+footer {
+    background-color: #80AE89;
+    color: white;
+    width: 100%;
+    left: 0;
+    bottom: 0;
+    text-align: center;
+}
+
+.footer-layout {
+    justify-content: space-around;
+}
+
+.footer-text {
+    display: inline-flex;
+}
+
+

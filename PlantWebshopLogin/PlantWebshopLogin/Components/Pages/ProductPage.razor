@@ -1,0 +1,72 @@
+﻿@page "/product/{id:int}"
+
+@using Blazored.LocalStorage
+@using PlantWebshopLogin.Models
+@using PlantWebshopLogin.Components.Pages
+@inject NavigationManager navigationManager
+@inject IShoppingCartService shoppingCartService
+@inject ProductService productService
+@inject ILocalStorageService localStorage
+
+@rendermode InteractiveServer
+
+
+<div class="container">
+    <div class="@(Product.Quantity == 0 ? "out-of-stock-product-card" : "product-card")">
+        <div class="product-image">
+            @if (Product.ImageUrl != null)
+            {
+                <img src="@Product.ImageUrl" alt="Image of @Product.Name" />
+            }
+            else
+            {
+                <img src="/bootstrap/images/noPicture.jpg" alt="Image of @Product.Name" />
+            }
+
+        </div>
+        <div class="product-details">
+            <h2 class="product-title">@Product.Name</h2>
+            @if (Product.OldPrice is not null)
+            {
+                <h4 class="product-price"><s class="old-price">$@Product.OldPrice</s>     $@Product.Price</h4>
+            }
+            else
+            {
+                <h4 class="product-price no-old-price">$@Product.Price</h4>
+            }
+            @if (Product.Quantity == 0)
+            {
+                <button class="add-to-cart-btn">Out of stock</button>
+            }
+            else
+            {
+                <button class="add-to-cart-btn" @onclick="() => AddToShoppingCart(Product)">Add to Cart</button>
+            }
+            <section class="description">@Product.Description</section>
+        </div>
+    </div>
+</div>
+
+
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    public Product Product { get; set; } = new Product();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {   
+        if (firstRender)
+        {
+            Product = productService.GetProduct(Id);
+            StateHasChanged();
+        }
+    }
+
+    public void AddToShoppingCart(Product product)
+    {
+        shoppingCartService.AddToCart(product);
+    }
+
+}

@@ -1,0 +1,46 @@
+﻿@page "/orderconfirmation"
+@using PlantWebshopLogin.Client.Models
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+
+@inject AuthenticationStateProvider StateProvider
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+
+@* Tvingar att man är inloggad för att komma åt den här sidan *@
+@attribute [Authorize]
+@rendermode InteractiveWebAssembly
+
+<h3>OrderConfirmation</h3>
+
+@foreach (var product in ConfirmationProducts)
+{
+	<p>@product.Name @product.Price</p>
+}
+@code {
+
+	private AuthenticationState authenticationState;
+
+	List<ClientProduct> ConfirmationProducts = new();
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			// Hämta ut vårt authenticationState
+			authenticationState = await StateProvider.GetAuthenticationStateAsync();
+
+			// Använd det för att hitta den inloggades userId via Claims
+			var userId = authenticationState
+				.User
+				.Claims
+				.Where(c => c.Type == ClaimTypes.NameIdentifier)
+				.First()
+				.Value;
+
+			// Hämta ut informationen från sessionStorage
+			ConfirmationProducts = await sessionStorage.GetItemAsync<List<ClientProduct>>(userId);
+			// Meddela komponenten att statet har uppdaterats
+			StateHasChanged();
+		}
+	}
+}

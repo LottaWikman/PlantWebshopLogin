@@ -1,0 +1,51 @@
+﻿@page "/"
+@using Blazored.LocalStorage
+@using PlantWebshopLogin.Models
+@using PlantWebshopLogin.Components.RazorComponents
+@inject NavigationManager navigationManager
+@inject IShoppingCartService shoppingCartService
+@inject ProductService productService
+@inject ILocalStorageService localStorage
+
+
+@rendermode InteractiveServer
+
+<PageTitle>Planty Corner</PageTitle>
+
+<div class="profile">
+    <img src="/bootstrap/Images/background_monstera_leaves.jpg" alt="Monstera leaves" class="picture">
+    <div class="heading-container">
+        <h1 class="headline">Planty Corner</h1>
+        <h5 class="underline">your plantshop online</h5>
+    </div>
+</div>
+
+<h3>Iteration of products from Db:</h3>
+<div class="product-grid">
+	@foreach (var product in productService.GetProducts())
+	{
+		<PlantWebshopLogin.Components.RazorComponents.ProductCard Product="product" />
+	}
+</div>
+
+<br />
+<br />
+
+<footer>
+	<section class="footer-layout">
+		<p class="footer-text">About us</p>
+		<p class="footer-text">Contact</p>
+		<p class="footer-text">FAQ</p>
+	</section>
+</footer>
+
+@code{
+	
+	public void GoTo(int id)
+	{
+		navigationManager.NavigateTo("/product/" + id);
+	}
+
+
+}
+

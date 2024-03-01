@@ -1,0 +1,74 @@
+﻿@page "/products"
+@using Microsoft.AspNetCore.Authorization
+@using PlantWebshopLogin.Data
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider StateProvider
+@inject UserService UserService
+@inject NavigationManager NavigationManager
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+
+@* Tvingar att man är inloggad för att komma åt den här sidan *@
+@attribute [Authorize]
+@rendermode InteractiveServer
+<h3>Products Page</h3>
+@* 
+<InputText @bind-Value="@product.Name">@product.Name</InputText>
+<InputText @bind-Value="@product.Description">@product.Description</InputText>
+<InputNumber @bind-Value="@product.Price">@product.Price</InputNumber>
+<InputNumber @bind-Value="@product.OldPrice">@product.OldPrice</InputNumber>
+<InputText @bind-Value="@product.ImageUrl">@product.ImageUrl</InputText>
+<InputNumber @bind-Value="@product.Quantity">@product.Quantity</InputNumber>
+ *@<button @onclick="CreateProduct">Create Product</button>
+<button @onclick="AddItemToUser">Add to user</button>
+<button @onclick="GoToConfirmation">Confirm order</button>
+@code {
+	public UserProduct userProduct {  get; set; } = new UserProduct();
+	ApplicationUser? user;
+	AuthenticationState? authenticationState;
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			// Vi hämtar ut det nuvarande autentiseringsStatet som innehåller information om användare som är inloggar
+			authenticationState = await StateProvider.GetAuthenticationStateAsync();
+			// Med hjälp av authenticationState.User kan vi hämta ut vår faktiskt ApplicationUser
+			var stateUser = await UserManager.GetUserAsync(authenticationState.User);
+			// Den kan vi sen använda för att hämta relaterad data från databasen
+			user = await UserService.GetUserProductsInfo(stateUser);
+		}
+	}
+	public async Task AddItemToUser()
+	{
+		if (user is not null)
+		{
+			user.UserProducts.Add(userProduct);
+			await UpdateUser();
+			userProduct = new UserProduct { Name = "", Price = 1 };
+		}
+	}
+
+	public async Task UpdateUser()
+	{
+		await UserService.UpdateUser(user);
+	}
+
+	public async Task CreateProduct()
+	{
+		
+	}
+
+	public async Task GoToConfirmation()
+	{
+		// Gör om Items till ClientItems, annars blir det cirkelreferenser och vi kan inte lägga till det i sessionStorage
+		List<ClientProduct> clientProducts = user.UserProducts.Select(p => new ClientProduct { Name = p.Name, Price = p.Price }).ToList();
+		// Här lägger vi våra ClientItems i sessionStorage så vi kan hämta ut dem därifrån inne i Client
+		await sessionStorage.SetItemAsync(user.Id, clientProducts);
+		NavigationManager.NavigateTo("/orderconfirmation");
+	}
+
+	class ClientProduct
+	{
+		public string Name { get; set; }
+		public double Price { get; set; }
+	}
+}
