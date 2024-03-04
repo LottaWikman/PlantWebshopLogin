@@ -3,9 +3,12 @@
 @using PlantWebshopLogin.Models
 @using PlantWebshopLogin.Components.RazorComponents
 @inject NavigationManager navigationManager
-@inject IShoppingCartService shoppingCartService
+@inject ShoppingCartService shoppingCartService
 @inject ProductService productService
 @inject ILocalStorageService localStorage
+@inject UserManager<ApplicationUser> userManager
+@inject AuthenticationStateProvider stateProvider
+@inject UserService userService
 
 @rendermode InteractiveServer
 
@@ -60,7 +63,6 @@ else
     string fromCurrency = "USD";
     string toCurrency = "EUR";
 
-    //Räcker det här för att göra APInyckeln säker från klienten?
     private string APIkey = "hCBPMVWwhCMsewSnaugGFg==YVJmq69pQ8BhcIle";
 
     public async Task ToEUR()

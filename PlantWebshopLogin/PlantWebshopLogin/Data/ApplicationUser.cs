@@ -6,7 +6,7 @@ namespace PlantWebshopLogin.Data
     // Add profile data for application users by adding properties to the ApplicationUser class
     public class ApplicationUser : IdentityUser
     {
-        public ICollection<UserProduct> UserProducts { get; set; } = new List<UserProduct>();
+        public List<UserProduct> UserShoppingCart { get; set; } = new List<UserProduct>();
     }
 
 }

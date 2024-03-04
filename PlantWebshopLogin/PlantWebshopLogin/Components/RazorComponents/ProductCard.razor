@@ -1,9 +1,14 @@
 ﻿@using PlantWebshopLogin.Models
+@using Microsoft.AspNetCore.Authorization
 
 @inject NavigationManager navigationManager
-@inject IShoppingCartService shoppingCartService
+@inject ShoppingCartService shoppingCartService
+@inject UserShoppingCartService userShoppingCartService
 @inject ProductService productService
 @inject HttpClient httpClient
+@inject UserManager<ApplicationUser> userManager
+@inject AuthenticationStateProvider stateProvider
+@inject UserService userService
 
 @rendermode InteractiveServer
 
@@ -36,7 +41,14 @@
             }
             else
             {
-                <button class="add-to-cart-btn" @onclick="() => AddToShoppingCart(Product)">Add to Cart</button>
+                @if (isLoggedIn is true)
+                {
+                    <button class="add-to-cart-btn" @onclick="() => AddToUserShoppingCart(Product)">Add to Cart</button>                    
+                }
+                else
+                {
+                    <button class="add-to-cart-btn" @onclick="() => AddToShoppingCart(Product)">Add to Cart</button>
+                }
             }
                 <button class="view-btn" @onclick="()=>GoTo(Product.Id)">View</button>
     </div>
@@ -56,6 +68,25 @@
     public double price;
     public double oldPrice;
 
+    bool isLoggedIn;
+
+    ApplicationUser? user;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var authState = await stateProvider.GetAuthenticationStateAsync();
+            if (authState.User.Identity.IsAuthenticated)
+            {
+                isLoggedIn = true;
+
+                var stateUser = await userManager.GetUserAsync(authState.User);
+                user = await userService.GetUser(stateUser);
+            }
+        }
+    }
+
 
     protected override async Task OnParametersSetAsync()
     {
@@ -64,7 +95,7 @@
         price = Math.Round(price, 2);
         oldPrice = Math.Round(oldPrice, 2);
     }
-    
+
     public void GoTo(int id)
     {
         navigationManager.NavigateTo("/product/" + id);
@@ -73,5 +104,10 @@
     public void AddToShoppingCart(Product product)
     {
         shoppingCartService.AddToCart(product);
+    }
+
+    public void AddToUserShoppingCart(Product product)
+    {
+        userShoppingCartService.AddToCart(product, user);
     }
 }

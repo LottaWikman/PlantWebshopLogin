@@ -1,28 +1,9 @@
 ﻿using PlantWebshopLogin.Models;
 using Blazored.LocalStorage;
-using Microsoft.AspNetCore.Components;
 
 namespace PlantWebshopLogin.Data;
 
-//ShoppingCart-funktionen behöver vara en service för
-//att kunna användas på olika platser i projektet.
-
-public interface IShoppingCartService
-{
-    //interface där vi definierar vad som ska finnas
-    //i en shoppingCartService:
-
-    //metod som hämtar en lista med Products
-    Task<List<Product>> GetShoppingCart();
-
-    //metod som tar emot en Product
-    Task AddToCart(Product product);
-
-    //metod som tömmer kundvagnen
-    Task EmptyCart();
-}
-
-public class ShoppingCartService : IShoppingCartService
+public class ShoppingCartService
 {
     //injicerar localStorage:
     private readonly ILocalStorageService _localStorage;
@@ -33,8 +14,6 @@ public class ShoppingCartService : IShoppingCartService
         _localStorage = localStorage;
     }
 
-    //Här skapar vi en faktisk service som implementerar
-    //IShoppingCartService.
     private List<Product> shoppingCart = new List<Product>();
 
     public async Task<List<Product>> GetShoppingCart()

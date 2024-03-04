@@ -22,7 +22,8 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddBlazoredSessionStorage();
 
 //Från PlantWebshop: ska dessa läggas in på Client-sidan också?
-builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>(); //byter till addScoped och ser om det fungerar bättre med localstorage
+builder.Services.AddScoped<ShoppingCartService>();
+builder.Services.AddScoped<UserShoppingCartService>(); 
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<CustomerService>();
 builder.Services.AddRazorComponents()

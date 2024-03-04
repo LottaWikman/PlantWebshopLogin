@@ -2,16 +2,22 @@
 
 @using Blazored.LocalStorage
 @using PlantWebshopLogin.Models
+@using PlantWebshopLogin.Client.Models
+@using Microsoft.AspNetCore.Authorization
 
-@inject IShoppingCartService shoppingCartService
+@inject ShoppingCartService shoppingCartService
+@inject UserShoppingCartService userShoppingCartService
 @inject CustomerService customerService
+@inject UserService userService
 @inject NavigationManager navigationManager
 @inject ILocalStorageService localStorage
+@inject UserManager<ApplicationUser> userManager
+@inject AuthenticationStateProvider stateProvider
 
 @rendermode InteractiveServer
 
 
-<h3>ShoppingCart</h3>
+<h3>ShoppingCart (not logged in)</h3>
 
 @if (shoppingCart.Count() == 0)
 {
@@ -28,48 +34,97 @@ else
 }
 
 
-<form @onsubmit="SetCustomerInfo">
-    <label>
-        Firstname:
-        <input type="text" @bind-value="customer.Firstname" />
-    </label>
-    <br />
-    <label>
-        Lastname:
-        <input type="text" @bind-value="customer.Lastname" />
-    </label>
-    <br />
-    <label>
-        Address:
-        <input type="text" @bind-value="customer.Address" />
-    </label>
-    <br />
-    <label>
-        City:
-        <input type="text" @bind-value="customer.City" />
-    </label>
-    <br />
-    <button type="submit">Submit</button>
-</form>
+<AuthorizeView>
+    <Authorized>
+        <h3>User's shopping cart</h3>
 
+        @if (userShoppingCart.Count() == 0)
+        {
+            <p>Your shoppingcart is empty.</p>
+        }
+        else
+        {
+            <ul>
+                @foreach (var product in userShoppingCart)
+                {
+                    <li>@product.Name</li>
+                }
+            </ul>
+        }
+
+        <form @onsubmit="SetCustomerInfo">
+            <label>
+                Firstname:
+                <input type="text" @bind-value="customer.Firstname" />
+            </label>
+            <br />
+            <label>
+                Lastname:
+                <input type="text" @bind-value="customer.Lastname" />
+            </label>
+            <br />
+            <label>
+                Address:
+                <input type="text" @bind-value="customer.Address" />
+            </label>
+            <br />
+            <label>
+                City:
+                <input type="text" @bind-value="customer.City" />
+            </label>
+            <br />
+            <button type="submit">Submit</button>
+        </form>
+    </Authorized>
+    <NotAuthorized>
+        <p>Login to continue purchase.</p>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     List<Product> shoppingCart = new List<Product>();
+    List<UserProduct> userShoppingCart = new List<UserProduct>();
     Customer customer = new Customer();
+
+    ApplicationUser? user;
+    AuthenticationState? authState;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            shoppingCart = await shoppingCartService.GetShoppingCart();
-            StateHasChanged(); //uppdaterar komponenten ifall ny data hämtas
+            //Är någon inloggad? Ja/Nej
+            authState = await stateProvider.GetAuthenticationStateAsync();
+
+            if (authState.User.Identity.IsAuthenticated)
+            {
+                //genom authState kan vi hämta ApplicationUser
+                var stateUser = await userManager.GetUserAsync(authState.User);
+
+                //Använder vår service för att hämta info om usern
+                user = await userService.GetUser(stateUser);
+
+                userShoppingCart = await userShoppingCartService.GetShoppingCart(user);
+            }
+            shoppingCart = await shoppingCartService.GetShoppingCart();   
+            StateHasChanged();
         }
     }
+
 
     public void SetCustomerInfo()
     {
         customerService.CreateCustomer(customer);
-        navigationManager.NavigateTo("/confirmation");
+        GoToConfirmation();
+    }
+
+    public async Task GoToConfirmation()
+    {
+        // Gör om Items till ClientItems, annars blir det cirkelreferenser och vi kan inte lägga till det i sessionStorage
+        List<ClientProduct> clientProducts = shoppingCart.Select(p => new ClientProduct { Name = p.Name, Price = p.Price }).ToList();
+        // Här lägger vi våra ClientItems i sessionStorage så vi kan hämta ut dem därifrån inne i Client
+        await localStorage.SetItemAsync(user.Id, clientProducts);
+        navigationManager.NavigateTo("/orderconfirmation");
     }
 
 }

@@ -6,6 +6,6 @@ namespace PlantWebshopLogin.Data;
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
 {
-    DbSet<UserProduct> UserProducts {  get; set; }
+    public DbSet<UserProduct> Purchases {  get; set; }
     public DbSet<Product> Products { get; set;}
 }
