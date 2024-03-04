@@ -7,7 +7,6 @@
 @inject ProductService productService
 @inject ILocalStorageService localStorage
 
-
 @rendermode InteractiveServer
 
 <PageTitle>Planty Corner</PageTitle>
@@ -19,12 +18,19 @@
         <h5 class="underline">your plantshop online</h5>
     </div>
 </div>
-
-<h3>Iteration of products from Db:</h3>
+<br />
+@if (showCurrency == "$")
+{
+    <button class="currency-btn" @onclick="ToEUR">€</button>
+}
+else
+{
+    <button class="currency-btn" @onclick="ToUSD">$</button>
+}
 <div class="product-grid">
 	@foreach (var product in productService.GetProducts())
 	{
-		<PlantWebshopLogin.Components.RazorComponents.ProductCard Product="product" />
+		<PlantWebshopLogin.Components.RazorComponents.ProductCard Product="product" showCurrency="@showCurrency" exchangeRate="@exchangeRate" />
 	}
 </div>
 
@@ -40,11 +46,60 @@
 </footer>
 
 @code{
-	
-	public void GoTo(int id)
-	{
-		navigationManager.NavigateTo("/product/" + id);
-	}
+    [Parameter]
+    public Product Product { get; set; }
+
+    public void GoTo(int id)
+    {
+        navigationManager.NavigateTo("/product/" + id);
+    }
+
+    public string showCurrency = "$";
+
+    public double exchangeRate = 1;
+    string fromCurrency = "USD";
+    string toCurrency = "EUR";
+
+    //Räcker det här för att göra APInyckeln säker från klienten?
+    private string APIkey = "hCBPMVWwhCMsewSnaugGFg==YVJmq69pQ8BhcIle";
+
+    public async Task ToEUR()
+    {
+        try
+        {
+            fromCurrency = "USD";
+            toCurrency = "EUR";
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("X-Api-Key", APIkey);
+            var response = await client.GetFromJsonAsync<ResponseType>
+            ($"https://api.api-ninjas.com/v1/exchangerate?pair={fromCurrency}_{toCurrency}");
+            exchangeRate = response.exchange_rate;
+            showCurrency = "€";
+        }
+        catch
+        {
+            exchangeRate = 000000.00;
+        }
+    }
+
+    public async Task ToUSD()
+    {
+        try
+        {
+            exchangeRate = 1;
+            showCurrency = "$";
+        }
+        catch
+        {
+            exchangeRate = 000000.00;
+        }
+    }
+
+    public class ResponseType
+    {
+        public string currency_pair { get; set; }
+        public double exchange_rate { get; set; }
+    }
 
 
 }

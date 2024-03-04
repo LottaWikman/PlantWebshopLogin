@@ -3,6 +3,7 @@
 @inject NavigationManager navigationManager
 @inject IShoppingCartService shoppingCartService
 @inject ProductService productService
+@inject HttpClient httpClient
 
 @rendermode InteractiveServer
 
@@ -22,11 +23,11 @@
       <h2 class="product-title">@Product.Name</h2>
       @if (Product.OldPrice is not null)
             {
-                <h4 class="product-price"><s class="old-price">$@Product.OldPrice</s>     $@Product.Price</h4>
+                <h4 class="product-price"><s class="old-price">@showCurrency@oldPrice </s>     @showCurrency@price</h4>
             }
             else
             {
-                <h4 class="product-price no-old-price">$@Product.Price</h4>
+                <h4 class="product-price no-old-price">@showCurrency@(price)</h4>
             }
 
             @if (Product.Quantity == 0)
@@ -46,6 +47,24 @@
     [Parameter]
     public Product Product { get; set; }
 
+    [Parameter]
+    public string showCurrency { get; set; }
+
+    [Parameter]
+    public double exchangeRate { get; set; }
+
+    public double price;
+    public double oldPrice;
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        price = Product.Price * exchangeRate;
+        oldPrice = Convert.ToDouble(Product.OldPrice * exchangeRate);
+        price = Math.Round(price, 2);
+        oldPrice = Math.Round(oldPrice, 2);
+    }
+    
     public void GoTo(int id)
     {
         navigationManager.NavigateTo("/product/" + id);
@@ -55,5 +74,4 @@
     {
         shoppingCartService.AddToCart(product);
     }
-
 }

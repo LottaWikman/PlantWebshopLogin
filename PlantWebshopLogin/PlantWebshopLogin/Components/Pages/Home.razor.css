@@ -39,6 +39,22 @@
 }
 
 
+.currency-btn {
+    background-color: #80AE89;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    margin: 20px;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.25s ease;
+}
+
+    .currency-btn:hover {
+        opacity: 0.8;
+    }
+
+
 /*FOOTER*/
 
 footer {

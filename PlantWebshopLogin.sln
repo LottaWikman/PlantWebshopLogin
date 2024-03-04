@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34616.47
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlantWebshopLogin", "PlantWebshopLogin\PlantWebshopLogin\PlantWebshopLogin.csproj", "{F0CC7E7C-56A5-453B-B75F-C0EEDC6C8DA3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlantWebshopLogin", "PlantWebshopLogin\PlantWebshopLogin\PlantWebshopLogin.csproj", "{F0CC7E7C-56A5-453B-B75F-C0EEDC6C8DA3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlantWebshopLogin.Client", "PlantWebshopLogin\PlantWebshopLogin.Client\PlantWebshopLogin.Client.csproj", "{4A566998-D5D7-46A9-BFAD-414914449492}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlantWebshopLogin.Client", "PlantWebshopLogin\PlantWebshopLogin.Client\PlantWebshopLogin.Client.csproj", "{4A566998-D5D7-46A9-BFAD-414914449492}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
