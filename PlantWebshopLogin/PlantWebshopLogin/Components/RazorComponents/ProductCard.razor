@@ -43,11 +43,11 @@
             {
                 @if (isLoggedIn is true)
                 {
-                    <button class="add-to-cart-btn" @onclick="() => AddToUserShoppingCart(Product)">Add to Cart</button>                    
+                    <button class="add-to-cart-btn" @onclick="() => AddToUserShoppingCart(Product)">Add to USER Cart</button>                    
                 }
-                else
+                else if (isLoggedIn is false)
                 {
-                    <button class="add-to-cart-btn" @onclick="() => AddToShoppingCart(Product)">Add to Cart</button>
+                    <button class="add-to-cart-btn" @onclick="() => AddToShoppingCart(Product)">Add to non-USER Cart</button>
                 }
             }
                 <button class="view-btn" @onclick="()=>GoTo(Product.Id)">View</button>
@@ -65,28 +65,33 @@
     [Parameter]
     public double exchangeRate { get; set; }
 
+    [Parameter]
+    public bool isLoggedIn { get; set; }
+
+    [Parameter]
+    public ApplicationUser user { get; set; }
+
     public double price;
     public double oldPrice;
 
-    bool isLoggedIn;
+    // bool isLoggedIn = false;
 
-    ApplicationUser? user;
+    // ApplicationUser? user;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            var authState = await stateProvider.GetAuthenticationStateAsync();
-            if (authState.User.Identity.IsAuthenticated)
-            {
-                isLoggedIn = true;
+    // protected override async Task OnAfterRenderAsync(bool firstRender)
+    // {
+    //     if (firstRender)
+    //     {
+    //         var authState = await stateProvider.GetAuthenticationStateAsync();
+    //         if (authState.User.Identity.IsAuthenticated)
+    //         {
+    //             isLoggedIn = true;
 
-                var stateUser = await userManager.GetUserAsync(authState.User);
-                user = await userService.GetUser(stateUser);
-            }
-        }
-    }
-
+    //             var stateUser = await userManager.GetUserAsync(authState.User);
+    //             user = await userService.GetUser(stateUser);
+    //         }
+    //     }
+    // }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -101,13 +106,13 @@
         navigationManager.NavigateTo("/product/" + id);
     }
 
-    public void AddToShoppingCart(Product product)
+    public async Task AddToShoppingCart(Product product)
     {
-        shoppingCartService.AddToCart(product);
+        await shoppingCartService.AddToCart(product);
     }
 
-    public void AddToUserShoppingCart(Product product)
+    public async Task AddToUserShoppingCart(Product product)
     {
-        userShoppingCartService.AddToCart(product, user);
+        await userShoppingCartService.AddToCart(product, user);
     }
 }

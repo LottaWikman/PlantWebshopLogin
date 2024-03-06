@@ -33,7 +33,12 @@ else
 <div class="product-grid">
 	@foreach (var product in productService.GetProducts())
 	{
-		<PlantWebshopLogin.Components.RazorComponents.ProductCard Product="product" showCurrency="@showCurrency" exchangeRate="@exchangeRate" />
+		<PlantWebshopLogin.Components.RazorComponents.ProductCard 
+        Product="product" 
+        showCurrency="@showCurrency" 
+        exchangeRate="@exchangeRate" 
+        isLoggedIn="@isLoggedIn"
+        user="@user"/>
 	}
 </div>
 
@@ -49,8 +54,29 @@ else
 </footer>
 
 @code{
-    [Parameter]
-    public Product Product { get; set; }
+    bool isLoggedIn;
+
+    ApplicationUser? user;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var authState = await stateProvider.GetAuthenticationStateAsync();
+            if (authState.User.Identity.IsAuthenticated)
+            {
+                isLoggedIn = true;
+
+                var stateUser = await userManager.GetUserAsync(authState.User);
+                user = await userService.GetUser(stateUser);
+            }
+            else
+            {
+                isLoggedIn = false;
+            }
+            StateHasChanged();
+        }
+    }
 
     public void GoTo(int id)
     {

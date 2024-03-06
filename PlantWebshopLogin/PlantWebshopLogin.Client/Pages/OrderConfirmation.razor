@@ -5,27 +5,40 @@
 
 @inject AuthenticationStateProvider StateProvider
 @inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject NavigationManager navigationManager
 
-@* Tvingar att man är inloggad för att komma åt den här sidan *@
 @attribute [Authorize]
+
 @rendermode InteractiveWebAssembly
 
-<h3>OrderConfirmation</h3>
+<h1>Thank you for you purchase!</h1>
 
-@foreach (var product in ConfirmationProducts)
+<h4>Order:</h4>
+<ul>
+@foreach (var product in order)
 {
-	<p>@product.Name @product.Price</p>
+	<li>@product.Name @product.Price</li>
 }
+</ul>
+<br />
+<h5>Customer information:</h5>
+<ul>
+	<li>@customer.Firstname</li>
+	<li>@customer.Lastname</li>
+	<li>@customer.Address</li>
+	<li>@customer.City</li>
+</ul>
+
+<button @onclick="GoToHome">Back to homepage</button>
 
 
 
 @code {
+	ClientCustomer customer = new();
+	List<ClientProduct> order = new();
 
-	//Minska quantity är DATABAS (inte servern)
 
 	private AuthenticationState authenticationState;
-
-	List<ClientProduct> ConfirmationProducts = new();
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
@@ -42,10 +55,19 @@
 				.First()
 				.Value;
 
-			// Hämta ut informationen från sessionStorage
-			ConfirmationProducts = await sessionStorage.GetItemAsync<List<ClientProduct>>(userId);
-			// Meddela komponenten att statet har uppdaterats
+			//skapar nyckeln för customer-infon:
+			string key = customer.Id.ToString();
+
+			// Hämta ut informationen från sessionStorage:
+			order = await sessionStorage.GetItemAsync<List<ClientProduct>>(userId);
+			customer = await sessionStorage.GetItemAsync<ClientCustomer>(key);
+			
 			StateHasChanged();
 		}
+	}
+
+	public void GoToHome()
+	{
+		navigationManager.NavigateTo("/");
 	}
 }

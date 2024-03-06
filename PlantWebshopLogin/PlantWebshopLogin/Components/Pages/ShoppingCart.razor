@@ -13,9 +13,9 @@
 @inject ILocalStorageService localStorage
 @inject UserManager<ApplicationUser> userManager
 @inject AuthenticationStateProvider stateProvider
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
 
 @rendermode InteractiveServer
-
 
 <h3>ShoppingCart (not logged in)</h3>
 
@@ -32,7 +32,9 @@ else
     }
     </ul>
 }
-
+<button @onclick="ClearShoppingCart">Clear shopping cart</button>
+<br />
+<br />
 
 <AuthorizeView>
     <Authorized>
@@ -51,8 +53,12 @@ else
                 }
             </ul>
         }
+        <button @onclick="ClearUserShoppingCart">Clear user's shopping cart</button>
 
-        <form @onsubmit="SetCustomerInfo">
+        <br/>
+        <br/>
+
+        <form @onsubmit="Submit">
             <label>
                 Firstname:
                 <input type="text" @bind-value="customer.Firstname" />
@@ -84,7 +90,9 @@ else
 @code {
     List<Product> shoppingCart = new List<Product>();
     List<UserProduct> userShoppingCart = new List<UserProduct>();
+    List<ClientProduct> clientProducts = new List<ClientProduct>();
     Customer customer = new Customer();
+    ClientCustomer clientCustomer = new ClientCustomer();
 
     ApplicationUser? user;
     AuthenticationState? authState;
@@ -111,19 +119,47 @@ else
         }
     }
 
-
-    public void SetCustomerInfo()
+    public async Task ClearShoppingCart()
     {
-        customerService.CreateCustomer(customer);
-        GoToConfirmation();
+        await shoppingCartService.EmptyCart();
+        StateHasChanged();
+        shoppingCart = await shoppingCartService.GetShoppingCart();
     }
 
-    public async Task GoToConfirmation()
+    public async Task ClearUserShoppingCart()
     {
-        // Gör om Items till ClientItems, annars blir det cirkelreferenser och vi kan inte lägga till det i sessionStorage
-        List<ClientProduct> clientProducts = shoppingCart.Select(p => new ClientProduct { Name = p.Name, Price = p.Price }).ToList();
-        // Här lägger vi våra ClientItems i sessionStorage så vi kan hämta ut dem därifrån inne i Client
-        await localStorage.SetItemAsync(user.Id, clientProducts);
+        authState = await stateProvider.GetAuthenticationStateAsync();
+
+        if (authState.User.Identity.IsAuthenticated)
+        {
+            var stateUser = await userManager.GetUserAsync(authState.User);
+            user = await userService.GetUser(stateUser);
+            await userShoppingCartService.EmptyCart(user);
+            StateHasChanged();
+            userShoppingCart = await userShoppingCartService.GetShoppingCart(user);
+        }
+    }
+
+    public async void Submit()
+    {
+        customerService.CreateCustomer(customer);
+        await userShoppingCartService.EmptyCart(user);
+        userShoppingCartService.DecreaseQuantity(userShoppingCart);
+
+        foreach (UserProduct userProduct in userShoppingCart)
+        {
+            ClientProduct clientProduct;
+            clientProduct = userShoppingCartService.ConvertToClientProduct(userProduct);
+            clientProducts.Add(clientProduct);
+        }
+
+        clientCustomer = customerService.ConvertToClientCustomer(customer);
+        string key = clientCustomer.Id.ToString();
+
+        //sparar objekten i sessionstorage:
+        await sessionStorage.SetItemAsync(user.Id, clientProducts);
+        await sessionStorage.SetItemAsync(key, clientCustomer);
+
         navigationManager.NavigateTo("/orderconfirmation");
     }
 
