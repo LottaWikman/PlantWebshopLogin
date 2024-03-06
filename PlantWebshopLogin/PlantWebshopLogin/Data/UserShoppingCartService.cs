@@ -8,18 +8,17 @@ public class UserShoppingCartService
 {
     private readonly ILocalStorageService _localStorage;
     private readonly ApplicationDbContext _context;
+    ProductService _productService;
 
-    public UserShoppingCartService(ILocalStorageService localStorage, ApplicationDbContext context)
+    public UserShoppingCartService(ILocalStorageService localStorage, ApplicationDbContext context, ProductService productService)
     {
         _localStorage = localStorage;
         _context = context;
+        _productService = productService;
     }
 
-
     ApplicationUser? user;
-
     private List<UserProduct> userShoppingCart = new List<UserProduct>();
-
 
     public async Task<List<UserProduct>> GetShoppingCart(ApplicationUser user)
     {
@@ -29,7 +28,7 @@ public class UserShoppingCartService
     public async Task AddToCart(Product product, ApplicationUser user)
     {
         userShoppingCart = await GetShoppingCart(user);
-        UserProduct userProduct = ConvertToUserProduct(product, user);
+        UserProduct userProduct = _productService.ConvertToUserProduct(product, user);
         userShoppingCart.Add(userProduct);
         await _localStorage.SetItemAsync(user.Id, userShoppingCart);
     }
@@ -38,38 +37,5 @@ public class UserShoppingCartService
     {
         userShoppingCart.Clear();
         await _localStorage.RemoveItemAsync(user.Id);
-    }
-
-    public UserProduct ConvertToUserProduct(Product product, ApplicationUser user)
-    {
-        return new UserProduct
-        {
-            Id = product.Id,
-            Name = product.Name,
-            Description = product.Description,
-            Price = product.Price,
-            ImageUrl = product.ImageUrl,
-            User = user
-        };
-    }
-
-    public void DecreaseQuantity(List<UserProduct> userShoppingCart)
-    {
-        foreach (UserProduct userProduct in userShoppingCart) 
-        { 
-            Product product = _context.Products.First(p => p.Id == userProduct.Id);
-            product.Quantity = product.Quantity - 1;
-            _context.SaveChanges();
-        }
-    }
-
-    public ClientProduct ConvertToClientProduct(UserProduct userShoppingCart)
-    { 
-        return new ClientProduct
-        {
-            Id = userShoppingCart.Id,
-            Name = userShoppingCart.Name,
-            Price = userShoppingCart.Price,
-        };
     }
 }

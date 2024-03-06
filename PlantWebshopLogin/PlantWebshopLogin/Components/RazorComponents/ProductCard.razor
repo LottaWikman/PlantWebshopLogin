@@ -74,25 +74,6 @@
     public double price;
     public double oldPrice;
 
-    // bool isLoggedIn = false;
-
-    // ApplicationUser? user;
-
-    // protected override async Task OnAfterRenderAsync(bool firstRender)
-    // {
-    //     if (firstRender)
-    //     {
-    //         var authState = await stateProvider.GetAuthenticationStateAsync();
-    //         if (authState.User.Identity.IsAuthenticated)
-    //         {
-    //             isLoggedIn = true;
-
-    //             var stateUser = await userManager.GetUserAsync(authState.User);
-    //             user = await userService.GetUser(stateUser);
-    //         }
-    //     }
-    // }
-
     protected override async Task OnParametersSetAsync()
     {
         price = Product.Price * exchangeRate;

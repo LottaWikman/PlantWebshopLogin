@@ -13,21 +13,28 @@
 
 <h1>Thank you for you purchase!</h1>
 
-<h4>Order:</h4>
-<ul>
-@foreach (var product in order)
+@if (isLoading == true)
 {
-	<li>@product.Name @product.Price</li>
+	<h4>Loading...</h4>
 }
-</ul>
-<br />
-<h5>Customer information:</h5>
-<ul>
-	<li>@customer.Firstname</li>
-	<li>@customer.Lastname</li>
-	<li>@customer.Address</li>
-	<li>@customer.City</li>
-</ul>
+else
+{
+	<h4>Order:</h4>
+	<ul>
+	@foreach (var product in order)
+	{
+		<li>@product.Name @product.Price</li>
+	}
+	</ul>
+	<br />
+	<h5>Customer information:</h5>
+	<ul>
+		<li>@customer.Firstname</li>
+		<li>@customer.Lastname</li>
+		<li>@customer.Address</li>
+		<li>@customer.City</li>
+	</ul>	
+}
 
 <button @onclick="GoToHome">Back to homepage</button>
 
@@ -36,6 +43,7 @@
 @code {
 	ClientCustomer customer = new();
 	List<ClientProduct> order = new();
+	Boolean isLoading = true;
 
 
 	private AuthenticationState authenticationState;
@@ -62,6 +70,7 @@
 			order = await sessionStorage.GetItemAsync<List<ClientProduct>>(userId);
 			customer = await sessionStorage.GetItemAsync<ClientCustomer>(key);
 			
+			isLoading = false;
 			StateHasChanged();
 		}
 	}

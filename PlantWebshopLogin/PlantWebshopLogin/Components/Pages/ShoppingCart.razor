@@ -7,6 +7,7 @@
 
 @inject ShoppingCartService shoppingCartService
 @inject UserShoppingCartService userShoppingCartService
+@inject ProductService productService
 @inject CustomerService customerService
 @inject UserService userService
 @inject NavigationManager navigationManager
@@ -144,12 +145,12 @@ else
     {
         customerService.CreateCustomer(customer);
         await userShoppingCartService.EmptyCart(user);
-        userShoppingCartService.DecreaseQuantity(userShoppingCart);
+        productService.DecreaseQuantity(userShoppingCart);
 
         foreach (UserProduct userProduct in userShoppingCart)
         {
             ClientProduct clientProduct;
-            clientProduct = userShoppingCartService.ConvertToClientProduct(userProduct);
+            clientProduct = productService.ConvertToClientProduct(userProduct);
             clientProducts.Add(clientProduct);
         }
 
@@ -159,6 +160,8 @@ else
         //sparar objekten i sessionstorage:
         await sessionStorage.SetItemAsync(user.Id, clientProducts);
         await sessionStorage.SetItemAsync(key, clientCustomer);
+
+        customerService.ClearCustomer();
 
         navigationManager.NavigateTo("/orderconfirmation");
     }

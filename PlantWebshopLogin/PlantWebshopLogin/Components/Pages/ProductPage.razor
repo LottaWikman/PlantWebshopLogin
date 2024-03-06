@@ -5,8 +5,12 @@
 @using PlantWebshopLogin.Components.Pages
 @inject NavigationManager navigationManager
 @inject ShoppingCartService shoppingCartService
+@inject UserShoppingCartService userShoppingCartService
 @inject ProductService productService
 @inject ILocalStorageService localStorage
+@inject AuthenticationStateProvider stateProvider
+@inject UserManager<ApplicationUser> userManager
+@inject UserService userService
 
 @rendermode InteractiveServer
 
@@ -40,7 +44,14 @@
             }
             else
             {
-                <button class="add-to-cart-btn" @onclick="() => AddToShoppingCart(Product)">Add to Cart</button>
+                @if (isLoggedIn is true)
+                {
+                    <button class="add-to-cart-btn" @onclick="() => AddToUserShoppingCart(Product)">Add to USER Cart</button>
+                }
+                else if (isLoggedIn is false)
+                {
+                    <button class="add-to-cart-btn" @onclick="() => AddToShoppingCart(Product)">Add to non-USER Cart</button>
+                }
             }
             <section class="description">@Product.Description</section>
         </div>
@@ -54,20 +65,39 @@
     public int Id { get; set; }
 
     public Product Product { get; set; } = new Product();
+    ApplicationUser? user;
+    bool isLoggedIn = false;
+
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {   
         if (firstRender)
         {
+            var authState = await stateProvider.GetAuthenticationStateAsync();
+            if (authState.User.Identity.IsAuthenticated)
+            {
+                isLoggedIn = true;
+
+                var stateUser = await userManager.GetUserAsync(authState.User);
+                user = await userService.GetUser(stateUser);
+            }
+
             Product = productService.GetProduct(Id);
             StateHasChanged();
         }
     }
 
-    public void AddToShoppingCart(Product product)
+
+    public async Task AddToShoppingCart(Product product)
     {
-        shoppingCartService.AddToCart(product);
+        await shoppingCartService.AddToCart(product);
     }
+
+    public async Task AddToUserShoppingCart(Product product)
+    {
+        await userShoppingCartService.AddToCart(product, user);
+    }
+
 
 
 
