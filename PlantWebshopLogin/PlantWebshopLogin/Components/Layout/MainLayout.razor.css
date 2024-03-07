@@ -1,14 +1,11 @@
 .page {
     position: relative;
-    /*display: flex; <-- gjorde så att navbaren inte hamnade längst upp*/
     flex-direction: column;
 }
-
 
 main {
     flex: 1;
 }
-
 
 @media (max-width: 640.98px) {
     .top-row {
@@ -21,6 +18,12 @@ main {
 }
 
 @media (min-width: 641px) {
+    .navmenu {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+    }
+
     .page {
         flex-direction: row;
     }
